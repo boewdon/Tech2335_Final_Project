@@ -1,96 +1,72 @@
-# Tech2335_Final_Project
-Python class final project - Housing Data Choropleth
+# Zillow County Choropleth
 
-> Copied sampled language from one of profs repositories.
+TECH 2335 Final Project — Residential Real Estate Data Visualizations
 
+**Group:** Thomas Bowdon, Thomas Khadoo, Waqar Mahmood
 
-> FYI - there are some important things missing from this repo. Follow along in class to implement testing and continuous integration, and secure environment variables using a ".env" and ".gitignore" file, etc. We may also extend the functionality to build a web interface. For full solutions, see https://github.com/s2t2/my-first-repo-fall-2025 (including that repository's [commit history](https://github.com/s2t2/my-first-repo-fall-2025/commits/main/) for step-by-step walkthrough).
+## What it does
 
+Zillow publishes a lot of housing data as CSV files, but their free charts make
+it hard to compare many markets at once. This app pulls the newest Zillow data
+and plots it on a **county-level choropleth map** so you can see how a value
+changes across the country at a glance. Pick a metric from the dropdown and the
+map redraws.
 
-Students: first visit https://github.com/prof-rossetti/software-dev-exercise and click "Use this template" green button to make a copy of the repo under your own control.
+## How it's put together
 
+| File | Role |
+|------|------|
+| `app.py` | The Streamlit web app (the interface + the map) |
+| `zillow_data.py` | Fetches Zillow CSVs, builds the FIPS key, preps data for mapping |
+| `requirements.txt` | Packages Render installs to run the app |
+| `notebooks/` | The original exploration notebook, kept for reference |
 
-## Setup
+The data flows in one direction: `zillow_data.py` downloads and cleans → `app.py`
+asks it for a metric and draws the map. Keeping the data logic separate from the
+app keeps both files short and easy to change.
 
+## Where the data comes from
 
-Clone the repo to download it from GitHub. Perhaps onto the Desktop.
+Home value and market data come from
+[Zillow Research](https://www.zillow.com/research/data/). Files live at URLs like:
 
-Navigate to the repo using the command line.
-
-```sh
-cd ~/Desktop/software-dev-exercise
+```
+https://files.zillowstatic.com/research/public_csvs/{metric}/County_{metric}_{cut}.csv
 ```
 
-Create a virtual environment:
+Because the URL is built from tokens, we compose it in code instead of
+downloading by hand. Monthly series update on the 16th of each month.
 
-```sh
-conda create -n software-dev-env python=3.11
-```
+## "Routinely brings in the newest data"
 
-Activate the virtual environment:
+The app caches each metric for 24 hours (`ttl=86400` in `app.py`). When the
+cache expires, the next visitor triggers a fresh download — so the app always
+shows recent data without needing a separate scheduled job. A scheduled monthly
+refresh is listed under Future Work.
 
-```sh
-conda activate software-dev-env
-```
+## Run it locally
 
-Install package dependencies:
-
-```sh
+```bash
 pip install -r requirements.txt
+streamlit run app.py
 ```
 
-## Configuration
+Then open the URL Streamlit prints (usually http://localhost:8501).
 
-The stocks functionality requires an AlphaVantage API key. Obtain a premium AlphaVantage API Key (using the [form](https://www.alphavantage.co/support/#api-key) or shared by the prof).
+## Deploy on Render
 
-Create a local ".env" file and store your environment variable in there:
+1. Push this repo to GitHub.
+2. On [render.com](https://render.com), create a **New → Web Service** and
+   connect this repo.
+3. Set:
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `streamlit run app.py --server.port $PORT --server.address 0.0.0.0`
+4. Create the service. First build takes a few minutes; after that you get a
+   public URL.
 
-```sh
-# this is the ".env" file...
+## Future work
 
-ALPHAVANTAGE_API_KEY="______________"
-
-# also tell flask where our web app is defined:
-FLASK_APP=web_app
-```
-
-## Usage
-
-Run RPS game:
-
-```sh
-python -m app.rps
-```
-
-Run stocks dashboard:
-
-```sh
- python -m app.stocks
-```
-
-### Web App
-
-Run the web app (then view in the browser at http://localhost:5000/):
-
-```sh
-# if we have the FLASK_APP=web_app env var in the ".env" file:
-flask run
-
-# Mac OS:
-FLASK_APP=web_app flask run
-
-# Windows OS:
-# ... if `export` doesn't work for you, try `set` instead
-# ... or set FLASK_APP variable via ".env" file
-export FLASK_APP=web_app
-flask run
-```
-
-## Testing
-
-Run tests:
-
-```sh
-pytest
-```
-#comments made by Waqar for testing
+- Scheduled monthly refresh (Render Cron Job) instead of cache expiry.
+- More metrics from `zillow_url_catalog.csv` (the catalog probe found ~419
+  county/state/metro cuts).
+- A time slider to animate a metric across months, not just the latest.

@@ -69,7 +69,10 @@ except requests.HTTPError:
     st.stop()
 
 # Dollar metrics look better on a log color scale (a few metros are 10x the
-# rest); count metrics we leave linear.
+# rest); everything else is linear. KIND_FORMAT supplies the d3 number format
+# used for the hover tooltip and, for percent metrics, the colorbar ticks.
+hover_fmt = zd.KIND_FORMAT[spec["kind"]]
+
 if spec["kind"] == "dollars":
     color_col = "log_value"
     lo, hi = tidy["log_value"].quantile([0.02, 0.98])
@@ -84,6 +87,8 @@ if spec["kind"] == "dollars":
 else:
     color_col = "value"
     colorbar = dict(title=choice)
+    if spec["kind"] == "percent":
+        colorbar["tickformat"] = hover_fmt
     range_color = tuple(tidy["value"].quantile([0.02, 0.98]))
 
 fig = px.choropleth_map(
@@ -106,7 +111,7 @@ fig.update_traces(
     hovertemplate=(
         "<b>%{hovertext}</b>, %{customdata[0]}<br>"
         "%{customdata[1]}<br>"
-        "Value: %{customdata[2]:,.0f}<extra></extra>"
+        f"Value: %{{customdata[2]:{hover_fmt}}}<extra></extra>"
     ),
 )
 fig.update_layout(

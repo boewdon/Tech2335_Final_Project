@@ -27,9 +27,19 @@ BASE = "https://files.zillowstatic.com/research/public_csvs"
 #
 # Each entry is a friendly label -> the pieces needed to build the URL. We use
 # County geography for everything because the choropleth draws county polygons.
-# These "cut" strings came straight from the catalog probe in the notebook --
-# they are confirmed to exist. Add more here as you verify them against
-# zillow_url_catalog.csv.
+# These "cut" strings were confirmed by HEAD-requesting the live Zillow CDN
+# (files.zillowstatic.com) for County-level files, not just taken from the
+# metric dictionary -- Zillow's catalog shifts over time so a cut that used
+# to resolve isn't guaranteed to still exist.
+#
+# zillow_metric_dictionary.md lists 22 metrics total. Four of them are left
+# out here because they have no County-level file at all (verified live):
+#   - sales_count_now        -- Metro only
+#   - new_con_sales_count_raw -- Metro/State only
+#   - zhvf_growth            -- Metro only
+#   - zorf_growth            -- Metro only
+# They'd need a Metro or State choropleth (different geojson) to show, which
+# is out of scope for this county map. See README "Future work".
 # ---------------------------------------------------------------------------
 METRICS = {
     "Typical Home Value (ZHVI)": {
@@ -52,6 +62,90 @@ METRICS = {
         "cut": "uc_sfrcondo_sm_month",
         "kind": "count",
     },
+    "Newly Pending Listings": {
+        "metric": "new_pending",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "count",
+    },
+    "Median List Price": {
+        "metric": "mlp",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "dollars",
+    },
+    "Mean Sale-to-List Ratio": {
+        "metric": "mean_sale_to_list",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "percent",
+    },
+    "Median Sale-to-List Ratio": {
+        "metric": "median_sale_to_list",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "percent",
+    },
+    "Percent Sold Above List": {
+        "metric": "pct_sold_above_list",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "percent",
+    },
+    "Percent Sold Below List": {
+        "metric": "pct_sold_below_list",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "percent",
+    },
+    "Share of Listings With a Price Cut": {
+        "metric": "perc_listings_price_cut",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "percent",
+    },
+    "Mean Days to Pending": {
+        "metric": "mean_doz_pending",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "days",
+    },
+    "Median Days to Pending": {
+        "metric": "med_doz_pending",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "days",
+    },
+    "Market Heat Index": {
+        "metric": "market_temp_index",
+        "cut": "uc_sfrcondo_month",
+        "kind": "index",
+    },
+    "Zillow Observed Rent Index (ZORI)": {
+        "metric": "zori",
+        "cut": "uc_sfrcondomfr_sm_sa_month",
+        "kind": "dollars",
+    },
+    "Affordable Home Price": {
+        "metric": "affordable_price",
+        "cut": "downpayment_0.20_uc_sfrcondo_tier_0.33_0.67_sm_sa_month",
+        "kind": "dollars",
+    },
+    "New Homeowner Income Needed": {
+        "metric": "new_homeowner_income_needed",
+        "cut": "downpayment_0.20_uc_sfrcondo_tier_0.33_0.67_sm_sa_month",
+        "kind": "dollars",
+    },
+    "New Renter Income Needed": {
+        "metric": "new_renter_income_needed",
+        "cut": "uc_sfrcondomfr_sm_sa_month",
+        "kind": "dollars",
+    },
+}
+
+# ---------------------------------------------------------------------------
+# How each "kind" of value should be formatted on the map. Dollar metrics get
+# a log color scale (see app.py) because a handful of metros run 10x the rest;
+# everything else is linear. The format string is a Plotly/d3 number format
+# used in both the hover tooltip and (for percent) the colorbar ticks.
+# ---------------------------------------------------------------------------
+KIND_FORMAT = {
+    "dollars": "$,.0f",
+    "percent": ".1%",
+    "count": ",.0f",
+    "days": ",.0f",
+    "index": ",.0f",
 }
 
 DTYPES = {

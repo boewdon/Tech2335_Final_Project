@@ -64,9 +64,24 @@ Then open the URL Streamlit prints (usually http://localhost:8501).
 4. Create the service. First build takes a few minutes; after that you get a
    public URL.
 
+## Metrics
+
+The dropdown covers 18 of the 22 metrics in `zillow_metric_dictionary.md`, at
+County geography (matches the choropleth's polygons). Four dictionary metrics
+are left out because Zillow doesn't publish them at County level at all
+(verified live against `files.zillowstatic.com`, not just the notebook's
+catalog probe, since Zillow's available cuts drift over time):
+
+- `sales_count_now` — Metro only
+- `new_con_sales_count_raw` — Metro/State only
+- `zhvf_growth` — Metro only
+- `zorf_growth` — Metro only
+
+Showing those would need a Metro- or State-level choropleth (different
+geojson polygons), which is future work, not a metric-list change.
+
 ## Future work
 
 - Scheduled monthly refresh (Render Cron Job) instead of cache expiry.
-- More metrics from `zillow_url_catalog.csv` (the catalog probe found ~419
-  county/state/metro cuts).
+- A Metro/State choropleth to cover the 4 metrics with no County-level file.
 - A time slider to animate a metric across months, not just the latest.

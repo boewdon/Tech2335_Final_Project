@@ -25,12 +25,14 @@ BASE = "https://files.zillowstatic.com/research/public_csvs"
 # ---------------------------------------------------------------------------
 # The menu of metrics the app offers.
 #
-# Each entry is a friendly label -> the pieces needed to build the URL. We use
-# County geography for everything because the choropleth draws county polygons.
-# These "cut" strings were confirmed by HEAD-requesting the live Zillow CDN
-# (files.zillowstatic.com) for County-level files, not just taken from the
-# metric dictionary -- Zillow's catalog shifts over time so a cut that used
-# to resolve isn't guaranteed to still exist.
+# Each entry is a friendly label -> the pieces needed to build the URL, plus a
+# "category" used to group the dropdown in app.py. Categories mirror the
+# Category column in zillow_metric_dictionary.md so the two stay consistent.
+# We use County geography for everything because the choropleth draws county
+# polygons. These "cut" strings were confirmed by HEAD-requesting the live
+# Zillow CDN (files.zillowstatic.com) for County-level files, not just taken
+# from the metric dictionary -- Zillow's catalog shifts over time so a cut
+# that used to resolve isn't guaranteed to still exist.
 #
 # zillow_metric_dictionary.md lists 22 metrics total. Four of them are left
 # out here because they have no County-level file at all (verified live):
@@ -46,93 +48,124 @@ METRICS = {
         "metric": "zhvi",
         "cut": "uc_sfrcondo_tier_0.33_0.67_sm_sa_month",
         "kind": "dollars",
+        "category": "Home Values",
     },
     "Median Sale Price": {
         "metric": "median_sale_price",
         "cut": "uc_sfrcondo_sm_sa_month",
         "kind": "dollars",
-    },
-    "For-Sale Inventory": {
-        "metric": "invt_fs",
-        "cut": "uc_sfrcondo_sm_month",
-        "kind": "count",
-    },
-    "New Listings": {
-        "metric": "new_listings",
-        "cut": "uc_sfrcondo_sm_month",
-        "kind": "count",
-    },
-    "Newly Pending Listings": {
-        "metric": "new_pending",
-        "cut": "uc_sfrcondo_sm_month",
-        "kind": "count",
-    },
-    "Median List Price": {
-        "metric": "mlp",
-        "cut": "uc_sfrcondo_sm_month",
-        "kind": "dollars",
+        "category": "Sales",
     },
     "Mean Sale-to-List Ratio": {
         "metric": "mean_sale_to_list",
         "cut": "uc_sfrcondo_sm_month",
         "kind": "percent",
+        "category": "Sales",
     },
     "Median Sale-to-List Ratio": {
         "metric": "median_sale_to_list",
         "cut": "uc_sfrcondo_sm_month",
         "kind": "percent",
+        "category": "Sales",
     },
     "Percent Sold Above List": {
         "metric": "pct_sold_above_list",
         "cut": "uc_sfrcondo_sm_month",
         "kind": "percent",
+        "category": "Sales",
     },
     "Percent Sold Below List": {
         "metric": "pct_sold_below_list",
         "cut": "uc_sfrcondo_sm_month",
         "kind": "percent",
+        "category": "Sales",
+    },
+    "For-Sale Inventory": {
+        "metric": "invt_fs",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "count",
+        "category": "For-Sale Listings",
+    },
+    "New Listings": {
+        "metric": "new_listings",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "count",
+        "category": "For-Sale Listings",
+    },
+    "Newly Pending Listings": {
+        "metric": "new_pending",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "count",
+        "category": "For-Sale Listings",
+    },
+    "Median List Price": {
+        "metric": "mlp",
+        "cut": "uc_sfrcondo_sm_month",
+        "kind": "dollars",
+        "category": "For-Sale Listings",
     },
     "Share of Listings With a Price Cut": {
         "metric": "perc_listings_price_cut",
         "cut": "uc_sfrcondo_sm_month",
         "kind": "percent",
+        "category": "Price Cuts",
     },
     "Mean Days to Pending": {
         "metric": "mean_doz_pending",
         "cut": "uc_sfrcondo_sm_month",
         "kind": "days",
+        "category": "Days on Market",
     },
     "Median Days to Pending": {
         "metric": "med_doz_pending",
         "cut": "uc_sfrcondo_sm_month",
         "kind": "days",
+        "category": "Days on Market",
     },
     "Market Heat Index": {
         "metric": "market_temp_index",
         "cut": "uc_sfrcondo_month",
         "kind": "index",
+        "category": "Market Heat",
     },
     "Zillow Observed Rent Index (ZORI)": {
         "metric": "zori",
         "cut": "uc_sfrcondomfr_sm_sa_month",
         "kind": "dollars",
+        "category": "Rentals",
     },
     "Affordable Home Price": {
         "metric": "affordable_price",
         "cut": "downpayment_0.20_uc_sfrcondo_tier_0.33_0.67_sm_sa_month",
         "kind": "dollars",
+        "category": "Affordability",
     },
     "New Homeowner Income Needed": {
         "metric": "new_homeowner_income_needed",
         "cut": "downpayment_0.20_uc_sfrcondo_tier_0.33_0.67_sm_sa_month",
         "kind": "dollars",
+        "category": "Affordability",
     },
     "New Renter Income Needed": {
         "metric": "new_renter_income_needed",
         "cut": "uc_sfrcondomfr_sm_sa_month",
         "kind": "dollars",
+        "category": "Affordability",
     },
 }
+
+# Display order for categories in the app's dropdown (dict insertion order
+# above already groups by category, but this is the explicit source of truth).
+CATEGORIES = [
+    "Home Values",
+    "Sales",
+    "For-Sale Listings",
+    "Price Cuts",
+    "Days on Market",
+    "Market Heat",
+    "Rentals",
+    "Affordability",
+]
 
 # ---------------------------------------------------------------------------
 # How each "kind" of value should be formatted on the map. Dollar metrics get

@@ -50,8 +50,17 @@ def load_counties():
 
 # ---------------------------------------------------------------------------
 # Controls
+#
+# Streamlit's selectbox has no native optgroup, so metrics are picked in two
+# steps: category first, then the metrics within it. Options for the second
+# box are recomputed whenever the category changes.
 # ---------------------------------------------------------------------------
-choice = st.selectbox("Choose a metric to map:", list(zd.METRICS.keys()))
+col1, col2 = st.columns(2)
+category = col1.selectbox("Category:", zd.CATEGORIES)
+metrics_in_category = [
+    label for label, spec in zd.METRICS.items() if spec["category"] == category
+]
+choice = col2.selectbox("Metric:", metrics_in_category)
 spec = zd.METRICS[choice]
 
 # ---------------------------------------------------------------------------

@@ -64,6 +64,8 @@ Then open the URL Streamlit prints (usually http://localhost:8501).
 4. Create the service. First build takes a few minutes; after that you get a
    public URL.
 
+   Public URL https://zillow-visualized.onrender.com
+
 ## Metrics
 
 The dropdown covers 18 of the 22 metrics in `zillow_metric_dictionary.md`, at

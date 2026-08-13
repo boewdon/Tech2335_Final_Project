@@ -21,6 +21,83 @@ import zillow_data as zd
 # Page setup
 # ---------------------------------------------------------------------------
 st.set_page_config(page_title="Zillow County Choropleth", layout="wide")
+
+# Brand colors: Zillow's blue/black two-color palette (#006AFF / #111116).
+# White page background + these accents come from .streamlit/config.toml;
+# this CSS only covers what the theme config can't reach -- button shape/
+# hover polish and the selectbox border/focus color.
+st.markdown(
+    """
+    <style>
+    div.stButton > button {
+        background-color: #006AFF;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 999px;
+        padding: 0.75rem 2.5rem;
+        font-size: 1.05rem;
+        font-weight: 600;
+        box-shadow: 0 4px 14px rgba(0, 106, 255, 0.25);
+        transition: transform 0.15s ease, box-shadow 0.15s ease,
+            background-color 0.15s ease;
+    }
+    div.stButton > button:hover {
+        background-color: #0057D9;
+        color: #FFFFFF;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 106, 255, 0.35);
+    }
+    div.stButton > button:active {
+        transform: translateY(0);
+    }
+    div[data-baseweb="select"] > div {
+        border-color: #C7DBFF;
+    }
+    div[data-baseweb="select"]:focus-within > div {
+        border-color: #006AFF;
+        box-shadow: 0 0 0 1px #006AFF;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ---------------------------------------------------------------------------
+# Landing page.
+#
+# st.session_state persists across reruns (but resets per browser session),
+# so it's what gates "have they clicked past the landing page yet." The
+# button click triggers a rerun; st.rerun() forces it immediately instead of
+# waiting on Streamlit's normal end-of-script rerun, so there's no flash of
+# stale landing content before the main page appears.
+# ---------------------------------------------------------------------------
+if "entered" not in st.session_state:
+    st.session_state.entered = False
+
+if not st.session_state.entered:
+    st.markdown(
+        """
+        <div style="text-align:center; padding-top:8rem;">
+            <h1 style="color:#111116; font-size:2.75rem; margin-bottom:0.5rem;">
+                Welcome to <span style="color:#006AFF;">Zillow Visualized</span>
+            </h1>
+            <p style="color:#5B5B66; font-size:1.15rem; margin-bottom:2.5rem;">
+                Explore Zillow's housing data across every U.S. county.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    _, center_col, _ = st.columns([1, 1, 1])
+    with center_col:
+        if st.button("Click to Enter", use_container_width=True):
+            st.session_state.entered = True
+            st.rerun()
+    st.stop()
+
+# ---------------------------------------------------------------------------
+# Main page (only reached after "Click to Enter").
+# ---------------------------------------------------------------------------
 st.title("Zillow Housing Data by County")
 st.caption("Data: Zillow Research (files.zillowstatic.com). Monthly series.")
 
@@ -52,15 +129,31 @@ def load_counties():
 # Controls
 #
 # Streamlit's selectbox has no native optgroup, so metrics are picked in two
-# steps: category first, then the metrics within it. Options for the second
-# box are recomputed whenever the category changes.
+# steps: category first, then the metrics within it. Both start with no
+# selection (index=None) so the metric dropdown -- and everything below it --
+# stays hidden until the user has actually picked a category, then a metric.
 # ---------------------------------------------------------------------------
 col1, col2 = st.columns(2)
-category = col1.selectbox("Category:", zd.CATEGORIES)
-metrics_in_category = [
-    label for label, spec in zd.METRICS.items() if spec["category"] == category
-]
-choice = col2.selectbox("Metric:", metrics_in_category)
+category = col1.selectbox(
+    "Category:", zd.CATEGORIES, index=None, placeholder="Select a category..."
+)
+
+choice = None
+if category:
+    metrics_in_category = [
+        label for label, spec in zd.METRICS.items() if spec["category"] == category
+    ]
+    choice = col2.selectbox(
+        "Metric:", metrics_in_category, index=None, placeholder="Select a metric..."
+    )
+
+if not category:
+    st.info("Pick a category to begin.")
+    st.stop()
+if not choice:
+    st.info("Pick a metric to see the map.")
+    st.stop()
+
 spec = zd.METRICS[choice]
 
 # ---------------------------------------------------------------------------

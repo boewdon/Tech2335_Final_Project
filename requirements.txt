@@ -3,4 +3,5 @@ pandas
 numpy
 plotly
 requests
+openpyxl
 pytest
